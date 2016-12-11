@@ -1,0 +1,23 @@
+{
+  "name": "fluent-videoconverter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RyanofRIT/fluent-videoconverter.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RyanofRIT/fluent-videoconverter/issues"
+  },
+  "homepage": "https://github.com/RyanofRIT/fluent-videoconverter#readme",
+  "dependencies": {
+    "fluent-ffmpeg": "^2.1.0",
+    "videoconverter": "^0.1.0"
+  }
+}
