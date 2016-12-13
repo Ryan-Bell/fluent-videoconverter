@@ -1,3 +1,4 @@
+'use strict'
 const vcpath = process.cwd() + '/node_modules/videoconverter/build/ffmpeg-all-codecs.js';
 
 var ffmpegCommand = require('fluent-ffmpeg');

@@ -1,0 +1,14 @@
+---
+after_script: "cat coverage/locv.info | node_modules/coveralls/bin/coveralls.js"
+cache:
+	directories:
+		- node_modules
+langiage: node_js
+node_js:
+	- "6.0"
+	- "6.1"
+	- "6.2"
+script:
+	- "npm test"
+	- "npm run cover"
+sudo: false
