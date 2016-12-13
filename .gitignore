@@ -35,3 +35,22 @@ jspm_packages
 
 # Optional REPL history
 .node_repl_history
+
+
+#VIM ignores
+# swap
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-v][a-z]
+[._]sw[a-p]
+
+#session
+Session.vim
+#temporary
+.netrwhist
+*~
+tags
+
+#MEDIA
+*.webm
+*.mp4
