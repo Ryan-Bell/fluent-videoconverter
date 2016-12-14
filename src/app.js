@@ -29,19 +29,10 @@ ffmpegCommand.prototype._spawnFfmpeg = function(args, options, processCB, endCB)
 
     var maxLines = 'stdoutLines' in options ? options.stdoutLines : this.options.stdoutLines;
 
-    // Find ffmpeg
-    this._getFfmpegPath(function(err, command) {
-      if (err) {
-        return endCB(err);
-      } else if (!command || command.length === 0) {
-        return endCB(new Error('Cannot find ffmpeg'));
-      }
-
       // Apply niceness
-      if (options.niceness && options.niceness !== 0 && !utils.isWindows) {
-        args.unshift('-n', options.niceness, command);
-        command = 'nice';
-      }
+			//TODO: check that the niceness argument is not backwards
+      if (options.niceness && options.niceness !== 0 && !utils.isWindows)
+        args.unshift('-n', options.niceness);
 
       var stdoutRing = utils.linesRing(maxLines);
       var stdoutClosed = false;
@@ -49,27 +40,37 @@ ffmpegCommand.prototype._spawnFfmpeg = function(args, options, processCB, endCB)
       var stderrRing = utils.linesRing(maxLines);
       var stderrClosed = false;
 
+      var processExited = false;
+
       // Spawn process
-			//args.unshift(command);
-			console.log(args, options);
-			ffmpeg({
+			var result = ffmpeg({
 				arguments: args,
-				print: function(data){console.log(data);},
-				printErr: function(data){console.log(data);},
+				print: function(data){
+					if (options.captureStdout) {
+						stdoutRing.append(data);
+					}
+				},
+				printErr: function(data){
+					stderrRing.append(data);
+				},
 				onExit: function(code){
-					console.log('code: ', code);
+          stdoutRing.close();
+          stdoutClosed = true;
+
+					stderrRing.close();
+					stderrClosed = true;
+
+					processExited = true;
+					if (code) {
+						console.log('code: ', code);
+						handleExit();
+						return;
+						handleExit(new Error('ffmpeg exited with code ' + code));
+					} else {
+						handleExit();
+					}
 				}
 			});
-
-      //var ffmpegProc = spawn('node', args, options);
-
-      if (ffmpegProc.stderr) {
-        ffmpegProc.stderr.setEncoding('utf8');
-      }
-
-      ffmpegProc.on('error', function(err) {
-        endCB(err);
-      });
 
       // Ensure we wait for captured streams to end before calling endCB
       var exitError = null;
@@ -83,51 +84,9 @@ ffmpegCommand.prototype._spawnFfmpeg = function(args, options, processCB, endCB)
         }
       }
 
-      // Handle process exit
-      var processExited = false;
-      ffmpegProc.on('exit', function(code, signal) {
-        processExited = true;
-
-        if (signal) {
-          handleExit(new Error('ffmpeg was killed with signal ' + signal));
-        } else if (code) {
-					console.log('code: ', code);
-					handleExit();
-					return;
-          handleExit(new Error('ffmpeg exited with code ' + code));
-        } else {
-          handleExit();
-        }
-      });
-
-      // Capture stdout if specified
-      if (options.captureStdout) {
-        ffmpegProc.stdout.on('data', function(data) {
-          stdoutRing.append(data);
-        });
-
-        ffmpegProc.stdout.on('close', function() {
-          stdoutRing.close();
-          stdoutClosed = true;
-          handleExit();
-        });
-      }
-
-      // Capture stderr if specified
-      ffmpegProc.stderr.on('data', function(data) {
-        stderrRing.append(data);
-      });
-
-      ffmpegProc.stderr.on('close', function() {
-        stderrRing.close();
-        stderrClosed = true;
-        handleExit();
-      });
-
       // Call process callback
-      processCB(ffmpegProc, stdoutRing, stderrRing);
-    });
-  };
+      processCB(result, stdoutRing, stderrRing);
+};
 
 ffmpegCommand(process.cwd() + '/bigbuckbunny.webm')
 	.noAudio()
