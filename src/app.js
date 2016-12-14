@@ -1,7 +1,18 @@
 'use strict'
+const ffmpeg = require('ffmpeg.js');
+//TODO: These paths suck
+//TODO: get rid of path manip and replace command in spawn_ffmpeg
 const vcpath = process.cwd() + '/node_modules/videoconverter/build/ffmpeg-all-codecs.js';
 
+
 var ffmpegCommand = require('fluent-ffmpeg');
+const utils = require('../node_modules/fluent-ffmpeg/lib/utils');
+
+//TODO these shouldn't be needed and should be removed
+ffmpegCommand.setFfmpegPath(vcpath);
+ffmpegCommand.setFfprobePath(vcpath);
+ffmpegCommand.setFlvtoolPath(vcpath);
+
 ffmpegCommand.prototype._spawnFfmpeg = function(args, options, processCB, endCB){
     // Enable omitting options
     if (typeof options === 'function') {
@@ -39,10 +50,18 @@ ffmpegCommand.prototype._spawnFfmpeg = function(args, options, processCB, endCB)
       var stderrClosed = false;
 
       // Spawn process
-			args.unshift(command);
-			console.log(command, args, options);
-			//this command needs to be converterted and then ffmpeg_run needs to be called with it
-      var ffmpegProc = spawn('node', args, options);
+			//args.unshift(command);
+			console.log(args, options);
+			ffmpeg({
+				arguments: args,
+				print: function(data){console.log(data);},
+				printErr: function(data){console.log(data);},
+				onExit: function(code){
+					console.log('code: ', code);
+				}
+			});
+
+      //var ffmpegProc = spawn('node', args, options);
 
       if (ffmpegProc.stderr) {
         ffmpegProc.stderr.setEncoding('utf8');
@@ -110,17 +129,8 @@ ffmpegCommand.prototype._spawnFfmpeg = function(args, options, processCB, endCB)
     });
   };
 
-
-
-
-/*
-var ffmpegCommand = require('fluent-ffmpeg');
-ffmpegCommand.setFfmpegPath(vcpath);
-ffmpegCommand.setFfprobePath(vcpath);
-ffmpegCommand.setFlvtoolPath(vcpath);
-*/
-ffmpegCommand(process.cwd() + '/node_modules/videoconverter/demo/bigbuckbunny.webm')
-	.noAudio().size('50%')
+ffmpegCommand(process.cwd() + '/bigbuckbunny.webm')
+	.noAudio()
 	.on('start', function(cl){
 		console.log('started with ', cl);
 	})
