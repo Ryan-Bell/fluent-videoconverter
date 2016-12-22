@@ -4,6 +4,15 @@ let   ffmpegCommand = require('fluent-ffmpeg');
 const fs            = require('fs');
 const utils         = require('./node_modules/fluent-ffmpeg/lib/utils');
 
+//remove the ffmpeg path related functions
+delete ffmpegCommand.prototype.setFfmpegPath;
+delete ffmpegCommand.prototype.setFfprobePath;
+delete ffmpegCommand.prototype.setFlvtoolPath;
+delete ffmpegCommand.prototype._forgetPaths;
+delete ffmpegCommand.prototype._getFfmpegPath;
+delete ffmpegCommand.prototype._getFfprobePath;
+delete ffmpegCommand.prototype._getFlvtoolPath;
+
 ffmpegCommand.prototype._spawnFfmpeg = function(args, options, processCB, endCB){
 		// Enable omitting options
 		if (typeof options === 'function') {
