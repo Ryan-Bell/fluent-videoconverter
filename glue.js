@@ -39,7 +39,7 @@ ffmpegCommand.prototype._spawnFfmpeg = function(args, options, processCB, endCB)
 		console.log(typeof args);
 		var result = ffmpeg({
 			MEMFS    : [{name: 'test.webm', data: bufferData }],
-			arguments: ['-i', 'test.webm', '-y', '-an', 'out.webm'],
+			arguments: args, 
 			//TODO: these should be linked up with fluent-ffmpeg if possible
 			print    : function(data){ console.log(data); },
 			/*
@@ -53,25 +53,23 @@ ffmpegCommand.prototype._spawnFfmpeg = function(args, options, processCB, endCB)
 			*/
 			//TODO: needed?
 			stdin    : function(){},
-		});
-	/*
-				onExit: function(code){
-					stdoutRing.close();
-					stdoutClosed = true;
+			onExit: function(code){
+				stdoutRing.close();
+				stdoutClosed = true;
 
-					stderrRing.close();
-					stderrClosed = true;
+				stderrRing.close();
+				stderrClosed = true;
 
-					processExited = true;
-					if (code) {
-						handleExit();
-						return;
-						handleExit(new Error('ffmpeg exited with code ' + code));
-					} else {
-						handleExit();
-					}
+				processExited = true;
+				if (code) {
+					handleExit();
+					return;
+					handleExit(new Error('ffmpeg exited with code ' + code));
+				} else {
+					handleExit();
 				}
-	*/
+			}
+		});
 
 			var out = result.MEMFS[0];
 			if(out){
