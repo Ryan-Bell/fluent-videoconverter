@@ -1,17 +1,8 @@
 'use strict'
 const ffmpeg = require('ffmpeg.js');
-//TODO: These paths suck
-//TODO: get rid of path manip and replace command in spawn_ffmpeg
-const vcpath = process.cwd() + '/node_modules/videoconverter/build/ffmpeg-all-codecs.js';
-
-
-var ffmpegCommand = require('fluent-ffmpeg');
-const utils = require('../node_modules/fluent-ffmpeg/lib/utils');
-
-//TODO these shouldn't be needed and should be removed
-ffmpegCommand.setFfmpegPath(vcpath);
-ffmpegCommand.setFfprobePath(vcpath);
-ffmpegCommand.setFlvtoolPath(vcpath);
+let ffmpegCommand = require('fluent-ffmpeg');
+const fs = require('fs');
+const utils = require('./node_modules/fluent-ffmpeg/lib/utils');
 
 ffmpegCommand.prototype._spawnFfmpeg = function(args, options, processCB, endCB){
     // Enable omitting options
@@ -42,15 +33,35 @@ ffmpegCommand.prototype._spawnFfmpeg = function(args, options, processCB, endCB)
 
       var processExited = false;
 
-      // Spawn process
+			console.log('args:', args);
+var testData = new Uint8Array(fs.readFileSync('test.webm'));
+
+var result = ffmpeg({
+	MEMFS: [{name: 'test.webm', data: testData }],
+	arguments: ['-i', 'test.webm', '-y', '-an', 'out.webm'],
+	stdout: function(data){ console.log(data); },
+	print: function(data){ console.log(data); },
+	printErr: function(data){ console.log(data); },
+	stdin: function(){},
+});
+
+console.log(result);
+var out = result.MEMFS[0];
+console.log(out);
+fs.writeFileSync(out.name, Buffer(out.data));
+/*
 			var result = ffmpeg({
+				MEMFS: [{name: "test.webm", data: testData}],
 				arguments: args,
+				stdout: function(data){ console.log(data); },
 				print: function(data){
+					console.log(data);
 					if (options.captureStdout) {
 						stdoutRing.append(data);
 					}
 				},
 				printErr: function(data){
+					console.log(data);
 					stderrRing.append(data);
 				},
 				onExit: function(code){
@@ -71,6 +82,14 @@ ffmpegCommand.prototype._spawnFfmpeg = function(args, options, processCB, endCB)
 					}
 				}
 			});
+*/
+			console.log(result);
+			var out = result.MEMFS[0];
+			console.log(out);
+			if(out){
+				console.log('try write');
+				fs.writeFileSync(out.name, Buffer(out.data));
+			}
 
       // Ensure we wait for captured streams to end before calling endCB
       var exitError = null;
@@ -83,21 +102,13 @@ ffmpegCommand.prototype._spawnFfmpeg = function(args, options, processCB, endCB)
           endCB(exitError, stdoutRing, stderrRing);
         }
       }
-
+			console.log('about to call callback');
       // Call process callback
       processCB(result, stdoutRing, stderrRing);
 };
 
-ffmpegCommand(process.cwd() + '/bigbuckbunny.webm')
+ffmpegCommand('test.webm')
 	.noAudio()
-	.on('start', function(cl){
-		console.log('started with ', cl);
-	})
-	.on('progress', function(obj){
-		console.log(obj);
-	})
-	.on('error', function(err){
-		console.log(err);
-	}).save(process.cwd() + '/test.mp4');
+	.save('out.webm');
 
 module.exports = ffmpegCommand;
