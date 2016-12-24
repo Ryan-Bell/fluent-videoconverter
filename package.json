@@ -18,8 +18,10 @@
   },
   "homepage": "https://github.com/RyanofRIT/fluent-videoconverter#readme",
   "dependencies": {
-    "fluent-ffmpeg": "^2.1.0",
-    "videoconverter": "^0.1.0",
+    "ffmpeg.js": "^3.1.9001",
+    "fluent-ffmpeg": "^2.1.0"
+  },
+  "devDependencies": {
     "chai": "^3.5.0",
     "coveralls": "^2.11.15",
     "istanbul": "^0.4.5",
