@@ -1,8 +1,7 @@
 'use strict'
-const ffmpeg        = require('ffmpeg.js');
 let   ffmpegCommand = require('fluent-ffmpeg');
-const fs            = require('fs');
 const utils         = require('./node_modules/fluent-ffmpeg/lib/utils');
+var spawn = require('child_process').spawn;
 
 //remove the ffmpeg path related functions
 delete ffmpegCommand.prototype.setFfmpegPath;
@@ -13,93 +12,98 @@ delete ffmpegCommand.prototype._getFfmpegPath;
 delete ffmpegCommand.prototype._getFfprobePath;
 delete ffmpegCommand.prototype._getFlvtoolPath;
 
-ffmpegCommand.prototype._spawnFfmpeg = function(args, options, processCB, endCB){
-		// Enable omitting options
-		if (typeof options === 'function') {
-			endCB = processCB;
-			processCB = options;
-			options = {};
+ffmpegCommand.prototype._spawnFfmpeg = function(args, options, processCB, endCB) {
+	// Enable omitting options
+	if (typeof options === 'function') {
+		endCB = processCB;
+		processCB = options;
+		options = {};
+	}
+
+	// Enable omitting processCB
+	if (typeof endCB === 'undefined') {
+		endCB = processCB;
+		processCB = function() {};
+	}
+
+	var maxLines = 'stdoutLines' in options ? options.stdoutLines : this.options.stdoutLines;
+
+	// Apply niceness
+	if (options.niceness && options.niceness !== 0 && !utils.isWindows) {
+		args.unshift('-n', options.niceness, command);
+		command = 'nice';
+	}
+
+	var stdoutRing = utils.linesRing(maxLines);
+	var stdoutClosed = false;
+
+	var stderrRing = utils.linesRing(maxLines);
+	var stderrClosed = false;
+
+	// Spawn process
+	args.unshift('./adapter.js');
+	var ffmpegProc = spawn('node', args, options);
+
+	if (ffmpegProc.stderr) {
+		ffmpegProc.stderr.setEncoding('utf8');
+	}
+
+	ffmpegProc.on('error', function(err) {
+		endCB(err);
+	});
+
+	// Ensure we wait for captured streams to end before calling endCB
+	var exitError = null;
+	function handleExit(err) {
+		if (err) {
+			exitError = err;
 		}
 
-		// Enable omitting processCB
-		if (typeof endCB === 'undefined') {
-			endCB = processCB;
-			processCB = function() {};
+		if (processExited && (stdoutClosed || !options.captureStdout) && stderrClosed) {
+			endCB(exitError, stdoutRing, stderrRing);
 		}
+	}
 
-		var maxLines = 'stdoutLines' in options ? options.stdoutLines : this.options.stdoutLines;
+	// Handle process exit
+	var processExited = false;
+	ffmpegProc.on('exit', function(code, signal) {
+		processExited = true;
 
-		// Apply niceness
-		//TODO: check that the niceness argument is not backwards
-		if (options.niceness && options.niceness !== 0 && !utils.isWindows)
-			args.unshift('-n', options.niceness);
+		if (signal) {
+			handleExit(new Error('ffmpeg was killed with signal ' + signal));
+		} else if (code) {
+			handleExit(new Error('ffmpeg exited with code ' + code));
+		} else {
+			handleExit();
+		}
+	});
 
-		var stdoutRing = utils.linesRing(maxLines);
-		var stdoutClosed = false;
-
-		var stderrRing = utils.linesRing(maxLines);
-		var stderrClosed = false;
-
-		var processExited = false;
-
-		//TODO: the name actually needs to come from the args
-		var bufferData = new Uint8Array(fs.readFileSync('test.webm'));
-		console.log(args);
-		console.log(typeof args);
-		var result = ffmpeg({
-			MEMFS    : [{name: 'test.webm', data: bufferData }],
-			arguments: args, 
-			//TODO: these should be linked up with fluent-ffmpeg if possible
-			print    : function(data){ console.log(data); },
-			/*
-					if (options.captureStdout) {
-						stdoutRing.append(data);
-					}
-			*/
-			printErr : function(data){ console.log(data); },
-			/*
-					stderrRing.append(data);
-			*/
-			//TODO: needed?
-			stdin    : function(){},
-			onExit: function(code){
-				stdoutRing.close();
-				stdoutClosed = true;
-
-				stderrRing.close();
-				stderrClosed = true;
-
-				processExited = true;
-				if (code) {
-					handleExit();
-					return;
-					handleExit(new Error('ffmpeg exited with code ' + code));
-				} else {
-					handleExit();
-				}
-			}
+	// Capture stdout if specified
+	if (options.captureStdout) {
+		ffmpegProc.stdout.on('data', function(data) {
+			stdoutRing.append(data);
 		});
 
-			var out = result.MEMFS[0];
-			if(out){
-				fs.writeFileSync(out.name, Buffer(out.data));
-			}
+		ffmpegProc.stdout.on('close', function() {
+			stdoutRing.close();
+			stdoutClosed = true;
+			handleExit();
+		});
+	}
 
-			// Ensure we wait for captured streams to end before calling endCB
-			var exitError = null;
-			function handleExit(err) {
-				if (err) {
-					exitError = err;
-				}
+	// Capture stderr if specified
+	ffmpegProc.stderr.on('data', function(data) {
+		stderrRing.append(data);
+	});
 
-				if (processExited && (stdoutClosed || !options.captureStdout) && stderrClosed) {
-					endCB(exitError, stdoutRing, stderrRing);
-				}
-			}
-			//TODO: determine the best way to actually call this (or if it doesn't need to be called)
-			processCB(result, stdoutRing, stderrRing);
+	ffmpegProc.stderr.on('close', function() {
+		stderrRing.close();
+		stderrClosed = true;
+		handleExit();
+	});
+
+	// Call process callback
+	processCB(ffmpegProc, stdoutRing, stderrRing);
 };
-
-ffmpegCommand('test.webm').noAudio().save('out.webm');
 
 module.exports = ffmpegCommand;
