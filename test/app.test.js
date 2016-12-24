@@ -1,7 +1,7 @@
 'use strict'
 let expect = require('chai').expect;
 const fs = require('fs');
-const app = require('../src/app.js');
+const app = require('../glue.js');
 
 describe('api', function(){
 	it('should export the fluent function', function(){

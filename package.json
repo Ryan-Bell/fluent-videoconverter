@@ -5,7 +5,9 @@
   "main": "src/app.js",
   "scripts": {
     "test": "node_modules/.bin/mocha --reporter spec",
-    "cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec test/*.test.js || true"
+    "test-cov": "node_modules/.bin/mocha --reporter spec",
+    "cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec test/*.test.js || true",
+		"view-cover": "firefox coverage/lcov-report/index.html"
   },
   "repository": {
     "type": "git",
