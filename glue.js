@@ -1,6 +1,6 @@
 'use strict'
 let   ffmpegCommand = require('fluent-ffmpeg');
-const utils         = require('./node_modules/fluent-ffmpeg/lib/utils');
+const utils         = require('fluent-ffmpeg/lib/utils');
 var spawn = require('child_process').spawn;
 
 //remove the ffmpeg path related functions
@@ -41,7 +41,7 @@ ffmpegCommand.prototype._spawnFfmpeg = function(args, options, processCB, endCB)
 	var stderrClosed = false;
 
 	// Spawn process
-	args.unshift('./adapter.js');
+	args.unshift(process.cwd() + '/node_modules/fluent-videoconverter/adapter.js');
 	var ffmpegProc = spawn('node', args, options);
 
 	if (ffmpegProc.stderr) {

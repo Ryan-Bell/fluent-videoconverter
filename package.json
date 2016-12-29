@@ -1,8 +1,8 @@
 {
   "name": "fluent-videoconverter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
-  "main": "src/app.js",
+  "main": "glue.js",
   "scripts": {
     "test": "node_modules/.bin/mocha --reporter spec",
     "test-cov": "node_modules/.bin/mocha --reporter spec",
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RyanofRIT/fluent-videoconverter.git"
+    "url": "git+https://github.com/Ryan-Bell/fluent-videoconverter.git"
   },
   "author": "Ryan Bell, Dan Fisher",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/RyanofRIT/fluent-videoconverter/issues"
+    "url": "https://github.com/Ryan-Bell/fluent-videoconverter/issues"
   },
-  "homepage": "https://github.com/RyanofRIT/fluent-videoconverter#readme",
+  "homepage": "https://github.com/Ryan-Bell/fluent-videoconverter#readme",
   "dependencies": {
     "ffmpeg.js": "^3.1.9001",
     "fluent-ffmpeg": "^2.1.0"
