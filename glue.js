@@ -4,9 +4,9 @@ const utils         = require('fluent-ffmpeg/lib/utils');
 var spawn = require('child_process').spawn;
 
 //remove the ffmpeg path related functions
-delete ffmpegCommand.prototype.setFfmpegPath;
-delete ffmpegCommand.prototype.setFfprobePath;
-delete ffmpegCommand.prototype.setFlvtoolPath;
+delete ffmpegCommand.setFfmpegPath;
+delete ffmpegCommand.setFfprobePath;
+delete ffmpegCommand.setFlvtoolPath;
 delete ffmpegCommand.prototype._forgetPaths;
 delete ffmpegCommand.prototype._getFfmpegPath;
 delete ffmpegCommand.prototype._getFfprobePath;
