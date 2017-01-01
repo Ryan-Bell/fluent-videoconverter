@@ -4,10 +4,10 @@
   "description": "",
   "main": "glue.js",
   "scripts": {
-    "test": "node_modules/.bin/mocha --reporter spec",
-    "test-cov": "node_modules/.bin/mocha --reporter spec",
-    "cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -R spec test/*.test.js || true",
-		"view-cover": "firefox coverage/lcov-report/index.html"
+    "test": "node_modules/.bin/mocha --require should --reporter spec",
+    "test-cov": "node_modules/.bin/mocha  --require should --reporter spec",
+    "cover": "node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- --require should -R spec test/*.test.js || true",
+    "view-cover": "firefox coverage/lcov-report/index.html"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
     "chai": "^3.5.0",
     "coveralls": "^2.11.15",
     "istanbul": "^0.4.5",
-    "mocha": "^3.2.0"
+    "mocha": "^3.2.0",
+    "should": "^11.1.2"
   }
 }
